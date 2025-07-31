@@ -1,0 +1,490 @@
+openapi: 3.0.3
+info:
+  title: Calendar Module API
+  description: API specification for Calendar (Time Blocks) management module
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+
+security:
+  - BearerAuth: []
+
+paths:
+  # ==========================================
+  # CALENDAR MODULE - TIME BLOCKS
+  # ==========================================
+  /timeblocks:
+    get:
+      tags:
+        - Calendar - Time Blocks
+      summary: Get user's time blocks
+      description: Retrieve time blocks for the authenticated user within a date range
+      parameters:
+        - name: startDate
+          in: query
+          description: Start date for filtering (YYYY-MM-DD)
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: End date for filtering (YYYY-MM-DD)
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: category
+          in: query
+          description: Filter by time block category
+          required: false
+          schema:
+            $ref: '#/components/schemas/TimeBlockCategory'
+      responses:
+        '200':
+          description: Time blocks retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TimeBlockResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Calendar - Time Blocks
+      summary: Create time block
+      description: Create a new time block for the authenticated user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTimeBlockRequest'
+      responses:
+        '201':
+          description: Time block created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/TimeBlockResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          description: Time conflict detected
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                            example: "CAL_001"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /timeblocks/{id}:
+    get:
+      tags:
+        - Calendar - Time Blocks
+      summary: Get time block detail
+      description: Get detailed information about a specific time block
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Time Block ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Time block retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/TimeBlockResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Time block not found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                            example: "CAL_002"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags:
+        - Calendar - Time Blocks
+      summary: Update time block
+      description: Update an existing time block
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Time Block ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTimeBlockRequest'
+      responses:
+        '200':
+          description: Time block updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/TimeBlockResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Time block not found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                            example: "CAL_002"
+        '422':
+          description: Time conflict detected
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                            example: "CAL_001"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Calendar - Time Blocks
+      summary: Delete time block
+      description: Delete an existing time block
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Time Block ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Time block deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Time block not found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                            example: "CAL_002"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /timeblocks:checkConflict:
+    post:
+      tags:
+        - Calendar - Time Blocks
+      summary: Check time conflicts
+      description: Validate if a time block would conflict with existing blocks (Google's action pattern)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - startTime
+                - endTime
+              properties:
+                startTime:
+                  type: string
+                  format: date-time
+                  description: Start date and time
+                endTime:
+                  type: string
+                  format: date-time
+                  description: End date and time
+                excludeId:
+                  type: string
+                  format: uuid
+                  description: Time block ID to exclude from conflict check (for updates)
+      responses:
+        '200':
+          description: Conflict check completed
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          hasConflict:
+                            type: boolean
+                          conflictingBlocks:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/TimeBlockResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    ValidationError:
+      description: Validation error with field-level details
+    UnauthorizedError:
+      description: Authentication required or token invalid
+    ForbiddenError:
+      description: Access denied to resource
+    InternalServerError:
+      description: Internal server error
+
+  schemas:
+    # Reference common schemas from main API
+    StandardResponse:
+      type: object
+    ErrorResponse:
+      type: object
+    
+    TimeBlockCategory:
+      type: string
+      enum:
+        - WORK
+        - PERSONAL
+        - EXERCISE
+        - LEARNING
+        - BREAK
+        - MEETING
+      example: WORK
+
+    # Calendar Specific Schemas
+    CreateTimeBlockRequest:
+      type: object
+      required:
+        - title
+        - category
+        - startTime
+        - endTime
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: "Morning workout"
+        description:
+          type: string
+          maxLength: 1000
+          example: "Daily exercise routine"
+        category:
+          $ref: '#/components/schemas/TimeBlockCategory'
+        startTime:
+          type: string
+          format: date-time
+          example: "2025-07-30T07:00:00Z"
+        endTime:
+          type: string
+          format: date-time
+          example: "2025-07-30T08:00:00Z"
+        isRecurring:
+          type: boolean
+          default: false
+          example: true
+        recurrencePattern:
+          type: string
+          maxLength: 100
+          example: "DAILY"
+        colorCode:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+          example: "#FF5722"
+
+    UpdateTimeBlockRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: "Extended morning workout"
+        description:
+          type: string
+          maxLength: 1000
+          example: "Extended daily exercise routine"
+        category:
+          $ref: '#/components/schemas/TimeBlockCategory'
+        startTime:
+          type: string
+          format: date-time
+          example: "2025-07-30T06:30:00Z"
+        endTime:
+          type: string
+          format: date-time
+          example: "2025-07-30T08:30:00Z"
+        isRecurring:
+          type: boolean
+          example: true
+        recurrencePattern:
+          type: string
+          maxLength: 100
+          example: "DAILY"
+        colorCode:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+          example: "#FF5722"
+
+    TimeBlockResponse:
+      type: object
+      required:
+        - id
+        - userId
+        - title
+        - category
+        - startTime
+        - endTime
+        - isRecurring
+        - colorCode
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440003"
+        userId:
+          type: string
+          example: "user123"
+        title:
+          type: string
+          example: "Morning workout"
+        description:
+          type: string
+          nullable: true
+          example: "Daily exercise routine"
+        category:
+          $ref: '#/components/schemas/TimeBlockCategory'
+        startTime:
+          type: string
+          format: date-time
+          example: "2025-07-30T07:00:00Z"
+        endTime:
+          type: string
+          format: date-time
+          example: "2025-07-30T08:00:00Z"
+        isRecurring:
+          type: boolean
+          example: true
+        recurrencePattern:
+          type: string
+          nullable: true
+          example: "DAILY"
+        colorCode:
+          type: string
+          example: "#FF5722"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-07-29T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-07-29T10:30:00Z"
+
+tags:
+  - name: Calendar - Time Blocks
+    description: Operations for time blocking and scheduling

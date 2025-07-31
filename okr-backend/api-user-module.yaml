@@ -1,0 +1,277 @@
+openapi: 3.0.3
+info:
+  title: User Module API
+  description: API specification for User Profile and Notification Preferences management module
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+
+security:
+  - BearerAuth: []
+
+paths:
+  # ==========================================
+  # USER MODULE - PROFILE & PREFERENCES
+  # ==========================================
+  /users/me:
+    get:
+      tags:
+        - User - Profile
+      summary: Get user profile
+      description: Retrieve the authenticated user's profile information (Google's /users/me pattern)
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags:
+        - User - Profile
+      summary: Update user profile
+      description: Update the authenticated user's profile information
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: User profile updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users/me/notificationpreferences:
+    get:
+      tags:
+        - User - Notifications
+      summary: Get notification preferences
+      description: Retrieve the authenticated user's notification preferences
+      responses:
+        '200':
+          description: Notification preferences retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/NotificationPreferenceResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags:
+        - User - Notifications
+      summary: Update notification preferences
+      description: Update the authenticated user's notification preferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNotificationPreferenceRequest'
+      responses:
+        '200':
+          description: Notification preferences updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/NotificationPreferenceResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    ValidationError:
+      description: Validation error with field-level details
+    UnauthorizedError:
+      description: Authentication required or token invalid
+    InternalServerError:
+      description: Internal server error
+
+  schemas:
+    # Reference common schemas from main API
+    StandardResponse:
+      type: object
+
+    # User Specific Schemas
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          example: "john.doe@example.com"
+
+    UserResponse:
+      type: object
+      required:
+        - id
+        - name
+        - email
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          example: "user123"
+          description: "Keycloak User ID"
+        name:
+          type: string
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          example: "john.doe@example.com"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-07-29T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-07-29T10:30:00Z"
+
+    UpdateNotificationPreferenceRequest:
+      type: object
+      properties:
+        deadlineNotifications:
+          type: boolean
+          example: true
+          description: "Enable notifications for approaching deadlines"
+        progressReminders:
+          type: boolean
+          example: true
+          description: "Enable reminders to update progress"
+        aiRecommendations:
+          type: boolean
+          example: false
+          description: "Enable AI recommendation notifications"
+        dailySummary:
+          type: boolean
+          example: true
+          description: "Enable daily summary notifications"
+        weeklySummary:
+          type: boolean
+          example: true
+          description: "Enable weekly summary notifications"
+        reminderFrequencyHours:
+          type: integer
+          minimum: 1
+          maximum: 168
+          example: 24
+          description: "Frequency of reminders in hours (1-168)"
+
+    NotificationPreferenceResponse:
+      type: object
+      required:
+        - id
+        - userId
+        - deadlineNotifications
+        - progressReminders
+        - aiRecommendations
+        - dailySummary
+        - weeklySummary
+        - reminderFrequencyHours
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440006"
+        userId:
+          type: string
+          example: "user123"
+          description: "Keycloak User ID"
+        deadlineNotifications:
+          type: boolean
+          example: true
+          description: "Enable notifications for approaching deadlines"
+        progressReminders:
+          type: boolean
+          example: true
+          description: "Enable reminders to update progress"
+        aiRecommendations:
+          type: boolean
+          example: false
+          description: "Enable AI recommendation notifications"
+        dailySummary:
+          type: boolean
+          example: true
+          description: "Enable daily summary notifications"
+        weeklySummary:
+          type: boolean
+          example: true
+          description: "Enable weekly summary notifications"
+        reminderFrequencyHours:
+          type: integer
+          example: 24
+          description: "Frequency of reminders in hours"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-07-29T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-07-29T10:30:00Z"
+
+tags:
+  - name: User - Profile
+    description: User profile management
+  - name: User - Notifications
+    description: Notification preferences management

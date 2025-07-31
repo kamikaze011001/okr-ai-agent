@@ -1,0 +1,54 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-create-notification-preference-table
+      author: okr-agent
+      changes:
+        - createTable:
+            tableName: notification_preferences
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    foreignKeyName: fk_notification_preference_user
+                    references: users(id)
+              - column:
+                  name: deadline_notifications
+                  type: BOOLEAN
+                  defaultValue: true
+              - column:
+                  name: progress_reminders
+                  type: BOOLEAN
+                  defaultValue: true
+              - column:
+                  name: ai_recommendations
+                  type: BOOLEAN
+                  defaultValue: true
+              - column:
+                  name: daily_summary
+                  type: BOOLEAN
+                  defaultValue: false
+              - column:
+                  name: weekly_summary
+                  type: BOOLEAN
+                  defaultValue: true
+              - column:
+                  name: reminder_frequency_hours
+                  type: INTEGER
+                  defaultValue: 24
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP

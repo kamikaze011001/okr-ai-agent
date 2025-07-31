@@ -1,0 +1,130 @@
+erDiagram
+    %% OKR AI Agent System - Entity Relationship Diagram
+    %% Generated for PostgreSQL Database Implementation
+    
+    USER {
+        VARCHAR(255) id PK "Keycloak User ID as Primary Key"
+        VARCHAR(100) name "Full Name"
+        VARCHAR(255) email UK "Email Address"
+        TIMESTAMP created_at "Creation Time"
+        TIMESTAMP updated_at "Last Update Time"
+    }
+    
+    OBJECTIVE {
+        UUID id PK "Primary Key"
+        VARCHAR(255) user_id FK "User Reference (Keycloak ID)"
+        VARCHAR(200) title "Objective Title"
+        TEXT description "Detailed Description"
+        ENUM cycle_type "MONTHLY, QUARTERLY, YEARLY"
+        ENUM status "ACTIVE, COMPLETED, PAUSED"
+        DATE start_date "Start Date"
+        DATE end_date "End Date"
+        DECIMAL(5,2) completion_percentage "Auto-calculated from Key Results"
+        TIMESTAMP created_at "Creation Time"
+        TIMESTAMP updated_at "Last Update Time"
+    }
+    
+    KEY_RESULT {
+        UUID id PK "Primary Key"
+        UUID objective_id FK "Objective Reference"
+        VARCHAR(200) title "Key Result Title"
+        TEXT description "Detailed Description"
+        ENUM measurement_type "PERCENTAGE, METRIC"
+        DECIMAL(10,2) current_value "Current Progress Value"
+        DECIMAL(10,2) target_value "Target Value"
+        VARCHAR(50) unit "Unit of Measurement (for METRIC type)"
+        ENUM status "ACTIVE, COMPLETED, PAUSED"
+        TIMESTAMP created_at "Creation Time"
+        TIMESTAMP updated_at "Last Update Time"
+    }
+    
+    PROGRESS_HISTORY {
+        UUID id PK "Primary Key"
+        UUID key_result_id FK "Key Result Reference"
+        DECIMAL(10,2) previous_value "Previous Value"
+        DECIMAL(10,2) new_value "New Value"
+        TEXT notes "Progress Notes"
+        TIMESTAMP recorded_at "When Progress Was Recorded"
+        VARCHAR(255) updated_by FK "User Who Updated (Keycloak ID)"
+    }
+    
+    TIME_BLOCK {
+        UUID id PK "Primary Key"
+        VARCHAR(255) user_id FK "User Reference (Keycloak ID)"
+        VARCHAR(200) title "Time Block Title"
+        TEXT description "Description"
+        ENUM category "WORK, PERSONAL, EXERCISE, LEARNING, BREAK, MEETING"
+        TIMESTAMP start_time "Start Date/Time"
+        TIMESTAMP end_time "End Date/Time"
+        BOOLEAN is_recurring "Is Recurring Event"
+        VARCHAR(100) recurrence_pattern "Recurrence Pattern (if applicable)"
+        VARCHAR(7) color_code "Hex Color Code for UI"
+        TIMESTAMP created_at "Creation Time"
+        TIMESTAMP updated_at "Last Update Time"
+    }
+    
+    NOTIFICATION_PREFERENCE {
+        UUID id PK "Primary Key"
+        VARCHAR(255) user_id FK "User Reference (Keycloak ID)"
+        BOOLEAN deadline_notifications "Enable Deadline Notifications"
+        BOOLEAN progress_reminders "Enable Progress Reminders"
+        BOOLEAN ai_recommendations "Enable AI Recommendation Notifications"
+        BOOLEAN daily_summary "Enable Daily Summary"
+        BOOLEAN weekly_summary "Enable Weekly Summary"
+        INTEGER reminder_frequency_hours "Reminder Frequency in Hours"
+        TIMESTAMP created_at "Creation Time"
+        TIMESTAMP updated_at "Last Update Time"
+    }
+    
+    CHAT_SESSION {
+        UUID id PK "Primary Key"
+        VARCHAR(255) user_id FK "User Reference (Keycloak ID)"
+        VARCHAR(200) title "Session Title"
+        ENUM status "ACTIVE, ARCHIVED"
+        TIMESTAMP created_at "Session Start Time"
+        TIMESTAMP updated_at "Last Activity Time"
+    }
+    
+    CHAT_MESSAGE {
+        UUID id PK "Primary Key"
+        UUID chat_session_id FK "Chat Session Reference"
+        ENUM role "SYSTEM, USER, ASSISTANT, TOOL"
+        TEXT content "Message Content"
+        TEXT metadata "JSON Metadata"
+        INTEGER response_time_ms "AI Response Time in Milliseconds"
+        DECIMAL(3,2) confidence_score "AI Confidence Score (0-1)"
+        TIMESTAMP created_at "Message Timestamp"
+    }
+    
+    RECOMMENDATION {
+        UUID id PK "Primary Key"
+        VARCHAR(255) user_id FK "User Reference (Keycloak ID)"
+        ENUM type "OKR_SUGGESTION, SCHEDULE_RECOMMENDATION, PROGRESS_INSIGHT"
+        VARCHAR(200) title "Recommendation Title"
+        TEXT content "Recommendation Content"
+        TEXT reasoning "AI Reasoning"
+        ENUM status "PENDING, ACCEPTED, REJECTED, DISMISSED"
+        UUID related_objective_id FK "Related Objective (optional)"
+        UUID related_key_result_id FK "Related Key Result (optional)"
+        TIMESTAMP created_at "Generation Time"
+        TIMESTAMP expires_at "Expiration Time"
+    }
+    
+    %% Relationships
+    USER ||--o{ OBJECTIVE : "creates"
+    USER ||--o{ TIME_BLOCK : "manages"
+    USER ||--|| NOTIFICATION_PREFERENCE : "has"
+    USER ||--o{ CHAT_SESSION : "initiates"
+    USER ||--o{ RECOMMENDATION : "receives"
+    USER ||--o{ PROGRESS_HISTORY : "updates"
+    
+    OBJECTIVE ||--o{ KEY_RESULT : "contains"
+    OBJECTIVE ||--o{ RECOMMENDATION : "relates_to"
+    
+    KEY_RESULT ||--o{ PROGRESS_HISTORY : "tracks"
+    KEY_RESULT ||--o{ RECOMMENDATION : "relates_to"
+    
+    CHAT_SESSION ||--o{ CHAT_MESSAGE : "contains"
+    
+    %% Styling
+    %%{init: {'theme':'base', 'themeVariables': { 'primaryColor': '#ff4444', 'primaryTextColor': '#333', 'primaryBorderColor': '#ff4444', 'lineColor': '#333333'}}}%%

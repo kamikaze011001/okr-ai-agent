@@ -1,0 +1,90 @@
+graph TB
+    %% Actors
+    User[👤 User<br/>Người dùng cá nhân]
+    AI[🤖 AI Agent<br/>Trí tuệ nhân tạo]
+    System[⚙️ System<br/>Hệ thống backend]
+    
+    %% OKR Management Use Cases
+    subgraph OKR["📋 Quản lý OKR"]
+        UC1[Tạo Objective<br/>FR-001]
+        UC2[Quản lý Key Results<br/>FR-002]
+        UC3[Cập nhật tiến độ<br/>FR-010]
+        UC4[Xem dashboard OKR<br/>FR-010]
+    end
+    
+    %% AI Agent Use Cases  
+    subgraph AIFeatures["🤖 Tính năng AI"]
+        UC5[Chat với AI Agent<br/>FR-003]
+        UC6[Nhận gợi ý tạo OKR<br/>FR-004]
+        UC7[Nhận phân tích tiến độ<br/>FR-005]
+        UC8[Nhận khuyến nghị cải thiện<br/>FR-005]
+        UC9[AI học thói quen người dùng<br/>FR-006]
+    end
+    
+    %% Calendar & Time Management
+    subgraph Calendar["📅 Quản lý Lịch trình"]
+        UC10[Quản lý Calendar cá nhân<br/>FR-007]
+        UC11[Tạo Time Blocks<br/>FR-008]
+        UC12[Tích hợp OKR với lịch trình<br/>FR-009]
+        UC13[Gợi ý activities cho KR<br/>FR-009]
+    end
+    
+    %% Notification & Sync
+    subgraph NotifSync["🔔 Thông báo & Đồng bộ"]
+        UC14[Nhận push notification<br/>FR-011]
+        UC15[Đồng bộ dữ liệu real-time<br/>FR-012]
+        UC16[Backup & restore dữ liệu<br/>FR-012]
+    end
+    
+    %% User interactions
+    User --> UC1
+    User --> UC2
+    User --> UC3
+    User --> UC4
+    User --> UC5
+    User --> UC10
+    User --> UC11
+    User --> UC14
+    User --> UC15
+    User --> UC16
+    
+    %% AI Agent interactions
+    AI --> UC6
+    AI --> UC7
+    AI --> UC8
+    AI --> UC9
+    AI --> UC13
+    
+    %% System interactions
+    System --> UC15
+    System --> UC16
+    System --> UC14
+    
+    %% Relationships and dependencies
+    UC1 -.->|include| UC2
+    UC2 -.->|include| UC3
+    UC3 -.->|include| UC4
+    UC5 -.->|extend| UC6
+    UC5 -.->|extend| UC7
+    UC5 -.->|extend| UC8
+    UC6 -.->|extend| UC1
+    UC6 -.->|extend| UC2
+    UC9 -.->|include| UC6
+    UC9 -.->|include| UC7
+    UC9 -.->|include| UC8
+    UC12 -.->|include| UC1
+    UC12 -.->|include| UC2
+    UC12 -.->|include| UC10
+    UC13 -.->|include| UC2
+    UC13 -.->|extend| UC11
+    
+    %% Styling
+    classDef userStyle fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef aiStyle fill:#f3e5f5,stroke:#4a148c,stroke-width:2px  
+    classDef systemStyle fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef usecaseStyle fill:#fff3e0,stroke:#e65100,stroke-width:1px
+    
+    class User userStyle
+    class AI aiStyle
+    class System systemStyle
+    class UC1,UC2,UC3,UC4,UC5,UC6,UC7,UC8,UC9,UC10,UC11,UC12,UC13,UC14,UC15,UC16 usecaseStyle

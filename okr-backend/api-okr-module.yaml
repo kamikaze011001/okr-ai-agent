@@ -1,0 +1,975 @@
+openapi: 3.0.3
+info:
+  title: OKR Module API
+  description: API specification for OKR (Objectives and Key Results) management module
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+
+security:
+  - BearerAuth: []
+
+paths:
+  # ==========================================
+  # OKR MODULE - OBJECTIVES
+  # ==========================================
+  /objectives:
+    get:
+      tags:
+        - OKR - Objectives
+      summary: Get user's objectives
+      description: Retrieve all objectives for the authenticated user
+      parameters:
+        - name: status
+          in: query
+          description: Filter by objective status
+          required: false
+          schema:
+            $ref: '#/components/schemas/ObjectiveStatus'
+        - name: page
+          in: query
+          description: Page number (1-based)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: size
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Objectives retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/ObjectiveResponse'
+                          pagination:
+                            $ref: '#/components/schemas/PaginationInfo'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - OKR - Objectives
+      summary: Create new objective
+      description: Create a new objective for the authenticated user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateObjectiveRequest'
+      responses:
+        '201':
+          description: Objective created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ObjectiveResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          description: Business rule violation (e.g., maximum objectives exceeded)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                            example: "OKR_001"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /objectives/{id}:
+    get:
+      tags:
+        - OKR - Objectives
+      summary: Get objective detail
+      description: Get detailed information about a specific objective
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Objective ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Objective detail retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ObjectiveDetailResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Objective not found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                            example: "OKR_001"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags:
+        - OKR - Objectives
+      summary: Update objective
+      description: Update an existing objective
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Objective ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateObjectiveRequest'
+      responses:
+        '200':
+          description: Objective updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ObjectiveResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Objective not found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                            example: "OKR_001"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - OKR - Objectives
+      summary: Delete objective
+      description: Delete an existing objective and all its key results
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Objective ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Objective deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Objective not found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                            example: "OKR_001"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /objectives/{id}/completion:
+    get:
+      tags:
+        - OKR - Objectives
+      summary: Calculate objective completion
+      description: Calculate and return the completion percentage of an objective
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Objective ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Completion calculated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          objectiveId:
+                            type: string
+                            format: uuid
+                          completionPercentage:
+                            type: number
+                            format: double
+                            minimum: 0
+                            maximum: 100
+                          lastCalculated:
+                            type: string
+                            format: date-time
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Objective not found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                            example: "OKR_001"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ==========================================
+  # OKR MODULE - KEY RESULTS
+  # ==========================================
+  /objectives/{objectiveId}/keyresults:
+    get:
+      tags:
+        - OKR - Key Results
+      summary: Get key results for objective
+      description: Retrieve all key results for a specific objective
+      parameters:
+        - name: objectiveId
+          in: path
+          required: true
+          description: Objective ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Key results retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/KeyResultResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Objective not found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                            example: "OKR_001"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - OKR - Key Results
+      summary: Create key result
+      description: Create a new key result for an objective
+      parameters:
+        - name: objectiveId
+          in: path
+          required: true
+          description: Objective ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateKeyResultRequest'
+      responses:
+        '201':
+          description: Key result created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/KeyResultResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Objective not found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                            example: "OKR_001"
+        '422':
+          description: Business rule violation (e.g., maximum key results exceeded)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                            example: "OKR_002"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /objectives/{objectiveId}/keyresults/{id}:
+    get:
+      tags:
+        - OKR - Key Results
+      summary: Get key result detail
+      description: Get detailed information about a specific key result
+      parameters:
+        - name: objectiveId
+          in: path
+          required: true
+          description: Objective ID
+          schema:
+            type: string
+            format: uuid
+        - name: id
+          in: path
+          required: true
+          description: Key Result ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Key result retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/KeyResultResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Key result not found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                            example: "OKR_002"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags:
+        - OKR - Key Results
+      summary: Update key result
+      description: Update an existing key result details (including progress)
+      parameters:
+        - name: objectiveId
+          in: path
+          required: true
+          description: Objective ID
+          schema:
+            type: string
+            format: uuid
+        - name: id
+          in: path
+          required: true
+          description: Key Result ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateKeyResultRequest'
+      responses:
+        '200':
+          description: Key result updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/KeyResultResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Key result not found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                            example: "OKR_002"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - OKR - Key Results
+      summary: Delete key result
+      description: Delete an existing key result
+      parameters:
+        - name: objectiveId
+          in: path
+          required: true
+          description: Objective ID
+          schema:
+            type: string
+            format: uuid
+        - name: id
+          in: path
+          required: true
+          description: Key Result ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Key result deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Key result not found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                            example: "OKR_002"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /objectives/{objectiveId}/keyresults/{id}/history:
+    get:
+      tags:
+        - OKR - Key Results
+      summary: Get progress history
+      description: Retrieve the progress history for a key result
+      parameters:
+        - name: objectiveId
+          in: path
+          required: true
+          description: Objective ID
+          schema:
+            type: string
+            format: uuid
+        - name: id
+          in: path
+          required: true
+          description: Key Result ID
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          description: Page number (1-based)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: size
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Progress history retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/ProgressHistoryResponse'
+                          pagination:
+                            $ref: '#/components/schemas/PaginationInfo'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Key result not found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                            example: "OKR_002"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    ValidationError:
+      description: Validation error with field-level details
+    UnauthorizedError:
+      description: Authentication required or token invalid
+    ForbiddenError:
+      description: Access denied to resource
+    InternalServerError:
+      description: Internal server error
+
+  schemas:
+    # Reference common schemas from main API
+    StandardResponse:
+      type: object
+    ErrorResponse:
+      type: object
+    PaginationInfo:
+      type: object
+    ObjectiveStatus:
+      type: string
+      enum: [ACTIVE, COMPLETED, PAUSED]
+    CycleType:
+      type: string
+      enum: [MONTHLY, QUARTERLY, YEARLY]
+    KeyResultStatus:
+      type: string
+      enum: [ACTIVE, COMPLETED, PAUSED]
+    MeasurementType:
+      type: string
+      enum: [PERCENTAGE, METRIC]
+
+    # OKR Specific Schemas
+    CreateObjectiveRequest:
+      type: object
+      required:
+        - title
+        - cycleType
+        - startDate
+        - endDate
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: "Improve personal productivity"
+        description:
+          type: string
+          maxLength: 1000
+          example: "Focus on time management and task organization"
+        cycleType:
+          $ref: '#/components/schemas/CycleType'
+        startDate:
+          type: string
+          format: date
+          example: "2025-08-01"
+        endDate:
+          type: string
+          format: date
+          example: "2025-10-31"
+
+    UpdateObjectiveRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 1000
+        status:
+          $ref: '#/components/schemas/ObjectiveStatus'
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+
+    ObjectiveResponse:
+      type: object
+      required:
+        - id
+        - title
+        - cycleType
+        - status
+        - startDate
+        - endDate
+        - completionPercentage
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        cycleType:
+          $ref: '#/components/schemas/CycleType'
+        status:
+          $ref: '#/components/schemas/ObjectiveStatus'
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        completionPercentage:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+        keyResults:
+          type: array
+          items:
+            $ref: '#/components/schemas/KeyResultResponse'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ObjectiveDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/ObjectiveResponse'
+        - type: object
+          properties:
+            keyResults:
+              type: array
+              items:
+                $ref: '#/components/schemas/KeyResultDetailResponse'
+
+    CreateKeyResultRequest:
+      type: object
+      required:
+        - title
+        - measurementType
+        - targetValue
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: "Complete 80% of daily tasks"
+        description:
+          type: string
+          maxLength: 1000
+        measurementType:
+          $ref: '#/components/schemas/MeasurementType'
+        targetValue:
+          type: number
+          format: double
+          minimum: 0
+        unit:
+          type: string
+          maxLength: 50
+          example: "%"
+
+    UpdateKeyResultRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 1000
+        targetValue:
+          type: number
+          format: double
+          minimum: 0
+        unit:
+          type: string
+          maxLength: 50
+        status:
+          $ref: '#/components/schemas/KeyResultStatus'
+        currentValue:
+          type: number
+          format: double
+          minimum: 0
+          description: "Update progress value"
+        notes:
+          type: string
+          maxLength: 500
+          description: "Progress notes when updating currentValue"
+
+    KeyResultResponse:
+      type: object
+      required:
+        - id
+        - objectiveId
+        - title
+        - measurementType
+        - currentValue
+        - targetValue
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        objectiveId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        measurementType:
+          $ref: '#/components/schemas/MeasurementType'
+        currentValue:
+          type: number
+          format: double
+        targetValue:
+          type: number
+          format: double
+        unit:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/KeyResultStatus'
+        completionPercentage:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    KeyResultDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/KeyResultResponse'
+        - type: object
+          properties:
+            progressHistory:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProgressHistoryResponse'
+              description: "Recent progress history (last 10 entries)"
+
+    ProgressHistoryResponse:
+      type: object
+      required:
+        - id
+        - keyResultId
+        - previousValue
+        - newValue
+        - recordedAt
+        - updatedBy
+      properties:
+        id:
+          type: string
+          format: uuid
+        keyResultId:
+          type: string
+          format: uuid
+        previousValue:
+          type: number
+          format: double
+        newValue:
+          type: number
+          format: double
+        notes:
+          type: string
+          nullable: true
+        recordedAt:
+          type: string
+          format: date-time
+        updatedBy:
+          type: string
+
+tags:
+  - name: OKR - Objectives
+    description: Operations for managing personal objectives
+  - name: OKR - Key Results
+    description: Operations for managing key results and progress tracking

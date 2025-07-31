@@ -1,0 +1,63 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-create-recommendation-table
+      author: okr-agent
+      changes:
+        - createTable:
+            tableName: recommendations
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_recommendation_user
+                    references: users(id)
+              - column:
+                  name: type
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: title
+                  type: VARCHAR(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: content
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: reasoning
+                  type: TEXT
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: related_objective_id
+                  type: UUID
+                  constraints:
+                    foreignKeyName: fk_recommendation_objective
+                    references: objectives(id)
+              - column:
+                  name: related_key_result_id
+                  type: UUID
+                  constraints:
+                    foreignKeyName: fk_recommendation_key_result
+                    references: key_results(id)
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: expires_at
+                  type: TIMESTAMP
