@@ -1,0 +1,269 @@
+openapi: 3.0.3
+info:
+  title: OKR AI Agent API
+  description: |
+    REST API for OKR AI Agent - A personal OKR management system with AI support.
+    
+    ## Features
+    - Personal OKR (Objectives and Key Results) management
+    - Time blocking and calendar management
+    - Chat history access (read-only)
+    - User profile and notification preferences
+    
+    ## Standard Response Format
+    All responses follow a consistent format:
+    ```json
+    {
+      "success": true,
+      "data": { ... },
+      "message": "Success",
+      "timestamp": "2025-07-29T10:30:00Z"
+    }
+    ```
+    
+    ## Error Response Format
+    ```json
+    {
+      "success": false,
+      "data": null,
+      "message": "Validation failed", 
+      "timestamp": "2025-07-29T10:30:00Z",
+      "error": {
+        "code": "VAL_001",
+        "details": [
+          {
+            "field": "title",
+            "message": "Title is required"
+          }
+        ]
+      }
+    }
+    ```
+    
+    ## API Design Guidelines
+    This API follows Google's REST API design guidelines for consistent resource naming and path structure.
+  version: 1.0.0
+  contact:
+    name: AIBLES Team
+    email: support@aibles.com
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+  - url: https://api.okr-agent.aibles.com/api/v1
+    description: Production server
+
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from Keycloak
+
+  responses:
+    ValidationError:
+      description: Validation error with field-level details
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "VAL_001"
+                      details:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            field:
+                              type: string
+                              example: "title"
+                            message:
+                              type: string
+                              example: "Title is required"
+
+    UnauthorizedError:
+      description: Authentication required or token invalid
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "AUTH_001"
+
+    ForbiddenError:
+      description: Access denied to resource
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "AUTH_002"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "SYS_001"
+
+  schemas:
+    # Standard Response Schemas
+    StandardResponse:
+      type: object
+      required:
+        - success
+        - message
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Success"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-07-29T10:30:00Z"
+
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - data
+        - message
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: false
+        data:
+          nullable: true
+          example: null
+        message:
+          type: string
+          example: "Validation failed"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-07-29T10:30:00Z"
+
+    PaginationInfo:
+      type: object
+      required:
+        - page
+        - size
+        - totalItems
+        - totalPages
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          example: 1
+        size:
+          type: integer
+          minimum: 1
+          example: 20
+        totalItems:
+          type: integer
+          minimum: 0
+          example: 100
+        totalPages:
+          type: integer
+          minimum: 0
+          example: 5
+
+    # Common Enums
+    ObjectiveStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - COMPLETED
+        - PAUSED
+      example: ACTIVE
+
+    CycleType:
+      type: string
+      enum:
+        - MONTHLY
+        - QUARTERLY
+        - YEARLY
+      example: QUARTERLY
+
+    KeyResultStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - COMPLETED
+        - PAUSED
+      example: ACTIVE
+
+    MeasurementType:
+      type: string
+      enum:
+        - PERCENTAGE
+        - METRIC
+      example: PERCENTAGE
+
+    TimeBlockCategory:
+      type: string
+      enum:
+        - WORK
+        - PERSONAL
+        - EXERCISE
+        - LEARNING
+        - BREAK
+        - MEETING
+      example: WORK
+
+    ChatSessionStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - ARCHIVED
+      example: ACTIVE
+
+    ChatMessageRole:
+      type: string
+      enum:
+        - SYSTEM
+        - USER
+        - ASSISTANT
+        - TOOL
+      example: USER
+
+paths: {}

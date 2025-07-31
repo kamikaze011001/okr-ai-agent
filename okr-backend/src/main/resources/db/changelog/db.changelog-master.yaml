@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/changes/001-create-user-table.yaml
+  - include:
+      file: db/changelog/changes/002-create-objective-table.yaml
+  - include:
+      file: db/changelog/changes/003-create-key-result-table.yaml
+  - include:
+      file: db/changelog/changes/004-create-progress-history-table.yaml
+  - include:
+      file: db/changelog/changes/005-create-time-block-table.yaml
+  - include:
+      file: db/changelog/changes/006-create-notification-preference-table.yaml
+  - include:
+      file: db/changelog/changes/007-create-chat-session-table.yaml
+  - include:
+      file: db/changelog/changes/008-create-chat-message-table.yaml
+  - include:
+      file: db/changelog/changes/009-create-recommendation-table.yaml

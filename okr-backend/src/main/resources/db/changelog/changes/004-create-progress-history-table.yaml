@@ -1,0 +1,41 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-create-progress-history-table
+      author: okr-agent
+      changes:
+        - createTable:
+            tableName: progress_history
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: key_result_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_progress_history_key_result
+                    references: key_results(id)
+              - column:
+                  name: previous_value
+                  type: DECIMAL(10,2)
+              - column:
+                  name: new_value
+                  type: DECIMAL(10,2)
+              - column:
+                  name: notes
+                  type: TEXT
+              - column:
+                  name: recorded_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_by
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_progress_history_user
+                    references: users(id)

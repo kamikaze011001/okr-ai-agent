@@ -1,0 +1,44 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-create-chat-message-table
+      author: okr-agent
+      changes:
+        - createTable:
+            tableName: chat_messages
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: chat_session_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_chat_message_session
+                    references: chat_sessions(id)
+              - column:
+                  name: role
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: content
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: metadata
+                  type: TEXT
+              - column:
+                  name: response_time_ms
+                  type: INTEGER
+              - column:
+                  name: confidence_score
+                  type: DECIMAL(3,2)
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP

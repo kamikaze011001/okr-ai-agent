@@ -1,0 +1,384 @@
+openapi: 3.0.3
+info:
+  title: Chat Module API
+  description: API specification for Chat (Sessions & Messages) read-only access module
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+
+security:
+  - BearerAuth: []
+
+paths:
+  # ==========================================
+  # CHAT MODULE - SESSIONS & MESSAGES (READ-ONLY)
+  # ==========================================
+  /chat/sessions:
+    get:
+      tags:
+        - Chat - Sessions
+      summary: Get user's chat sessions
+      description: Retrieve all chat sessions for the authenticated user
+      parameters:
+        - name: status
+          in: query
+          description: Filter by session status
+          required: false
+          schema:
+            $ref: '#/components/schemas/ChatSessionStatus'
+        - name: page
+          in: query
+          description: Page number (1-based)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: size
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Chat sessions retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/ChatSessionResponse'
+                          pagination:
+                            $ref: '#/components/schemas/PaginationInfo'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /chat/sessions/{id}:
+    get:
+      tags:
+        - Chat - Sessions
+      summary: Get session detail
+      description: Get detailed information about a specific chat session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Chat Session ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Session detail retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ChatSessionResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Chat session not found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                            example: "CHAT_001"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /chat/sessions/{id}/messages:
+    get:
+      tags:
+        - Chat - Messages
+      summary: Get session messages
+      description: Retrieve messages for a specific chat session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Chat Session ID
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          description: Page number (1-based)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: size
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Messages retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/ChatMessageResponse'
+                          pagination:
+                            $ref: '#/components/schemas/PaginationInfo'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Chat session not found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                            example: "CHAT_001"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /chat/messages:search:
+    get:
+      tags:
+        - Chat - Messages
+      summary: Search chat messages
+      description: Search messages across all user's chat sessions (Google's action pattern)
+      parameters:
+        - name: query
+          in: query
+          required: true
+          description: Search query
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 200
+        - name: sessionId
+          in: query
+          required: false
+          description: Limit search to specific session
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          description: Page number (1-based)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: size
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Search completed successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/ChatMessageResponse'
+                          pagination:
+                            $ref: '#/components/schemas/PaginationInfo'
+                          query:
+                            type: string
+                            description: The search query used
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    ValidationError:
+      description: Validation error with field-level details
+    UnauthorizedError:
+      description: Authentication required or token invalid
+    ForbiddenError:
+      description: Access denied to resource
+    InternalServerError:
+      description: Internal server error
+
+  schemas:
+    # Reference common schemas from main API
+    StandardResponse:
+      type: object
+    ErrorResponse:
+      type: object
+    PaginationInfo:
+      type: object
+    
+    ChatSessionStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - ARCHIVED
+      example: ACTIVE
+
+    ChatMessageRole:
+      type: string
+      enum:
+        - SYSTEM
+        - USER
+        - ASSISTANT
+        - TOOL
+      example: USER
+
+    # Chat Specific Schemas
+    ChatSessionResponse:
+      type: object
+      required:
+        - id
+        - userId
+        - title
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440004"
+        userId:
+          type: string
+          example: "user123"
+        title:
+          type: string
+          example: "OKR Planning Session"
+        status:
+          $ref: '#/components/schemas/ChatSessionStatus'
+        messageCount:
+          type: integer
+          minimum: 0
+          example: 25
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-07-29T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-07-29T12:45:00Z"
+
+    ChatMessageResponse:
+      type: object
+      required:
+        - id
+        - chatSessionId
+        - role
+        - content
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440005"
+        chatSessionId:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440004"
+        role:
+          $ref: '#/components/schemas/ChatMessageRole'
+        content:
+          type: string
+          example: "Can you help me create quarterly OKRs for improving productivity?"
+        metadata:
+          type: object
+          nullable: true
+          example: {"source": "web", "language": "en"}
+        responseTimeMs:
+          type: integer
+          nullable: true
+          example: 1250
+        confidenceScore:
+          type: number
+          format: double
+          nullable: true
+          minimum: 0
+          maximum: 1
+          example: 0.95
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-07-29T10:30:00Z"
+
+tags:
+  - name: Chat - Sessions
+    description: Read-only access to chat sessions
+  - name: Chat - Messages
+    description: Read-only access to chat messages and search
