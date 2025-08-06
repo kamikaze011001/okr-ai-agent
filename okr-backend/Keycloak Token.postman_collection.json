@@ -1,0 +1,302 @@
+{
+  "info": {
+    "name": "Keycloak Token Generation",
+    "description": "Postman collection for generating Keycloak tokens for testing the OKR AI Agent API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get Token - Password Grant",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "grant_type",
+              "value": "password",
+              "type": "text"
+            },
+            {
+              "key": "client_id",
+              "value": "{{client_id}}",
+              "type": "text"
+            },
+            {
+              "key": "client_secret",
+              "value": "{{client_secret}}",
+              "type": "text",
+              "disabled": true
+            },
+            {
+              "key": "username",
+              "value": "{{username}}",
+              "type": "text"
+            },
+            {
+              "key": "password",
+              "value": "{{password}}",
+              "type": "text"
+            },
+            {
+              "key": "scope",
+              "value": "openid",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+          "host": [
+            "{{keycloak_url}}"
+          ],
+          "path": [
+            "realms",
+            "{{realm}}",
+            "protocol",
+            "openid-connect",
+            "token"
+          ]
+        },
+        "description": "Get an access token using the password grant type"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Token - Client Credentials",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "grant_type",
+              "value": "client_credentials",
+              "type": "text"
+            },
+            {
+              "key": "client_id",
+              "value": "{{client_id}}",
+              "type": "text"
+            },
+            {
+              "key": "client_secret",
+              "value": "{{client_secret}}",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+          "host": [
+            "{{keycloak_url}}"
+          ],
+          "path": [
+            "realms",
+            "{{realm}}",
+            "protocol",
+            "openid-connect",
+            "token"
+          ]
+        },
+        "description": "Get an access token using the client credentials grant type"
+      },
+      "response": []
+    },
+    {
+      "name": "Refresh Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "grant_type",
+              "value": "refresh_token",
+              "type": "text"
+            },
+            {
+              "key": "client_id",
+              "value": "{{client_id}}",
+              "type": "text"
+            },
+            {
+              "key": "client_secret",
+              "value": "{{client_secret}}",
+              "type": "text",
+              "disabled": true
+            },
+            {
+              "key": "refresh_token",
+              "value": "{{refresh_token}}",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+          "host": [
+            "{{keycloak_url}}"
+          ],
+          "path": [
+            "realms",
+            "{{realm}}",
+            "protocol",
+            "openid-connect",
+            "token"
+          ]
+        },
+        "description": "Refresh an access token using a refresh token"
+      },
+      "response": []
+    },
+    {
+      "name": "User Info",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/userinfo",
+          "host": [
+            "{{keycloak_url}}"
+          ],
+          "path": [
+            "realms",
+            "{{realm}}",
+            "protocol",
+            "openid-connect",
+            "userinfo"
+          ]
+        },
+        "description": "Get user information using an access token"
+      },
+      "response": []
+    },
+    {
+      "name": "Token Introspection",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "token",
+              "value": "{{access_token}}",
+              "type": "text"
+            },
+            {
+              "key": "client_id",
+              "value": "{{client_id}}",
+              "type": "text"
+            },
+            {
+              "key": "client_secret",
+              "value": "{{client_secret}}",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token/introspect",
+          "host": [
+            "{{keycloak_url}}"
+          ],
+          "path": [
+            "realms",
+            "{{realm}}",
+            "protocol",
+            "openid-connect",
+            "token",
+            "introspect"
+          ]
+        },
+        "description": "Introspect a token to check its validity"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "keycloak_url",
+      "value": "http://localhost:8081",
+      "type": "string",
+      "description": "Keycloak server URL"
+    },
+    {
+      "key": "realm",
+      "value": "okr-agent",
+      "type": "string",
+      "description": "Keycloak realm name"
+    },
+    {
+      "key": "client_id",
+      "value": "okr-agent-client",
+      "type": "string",
+      "description": "Keycloak client ID"
+    },
+    {
+      "key": "client_secret",
+      "value": "",
+      "type": "string",
+      "description": "Keycloak client secret (if required)"
+    },
+    {
+      "key": "username",
+      "value": "testuser",
+      "type": "string",
+      "description": "Username for password grant"
+    },
+    {
+      "key": "password",
+      "value": "testpassword",
+      "type": "string",
+      "description": "Password for password grant"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string",
+      "description": "Access token for API requests"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string",
+      "description": "Refresh token for token refresh"
+    }
+  ]
+}

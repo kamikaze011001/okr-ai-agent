@@ -1,4 +1,4 @@
-package com.aibles.okragent.modules.chat
+package com.aibles.okragent.modules.chat.infrastructure.config
 
 import org.springframework.context.annotation.Configuration
 

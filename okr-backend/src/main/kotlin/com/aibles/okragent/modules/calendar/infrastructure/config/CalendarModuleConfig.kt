@@ -1,4 +1,4 @@
-package com.aibles.okragent.modules.calendar
+package com.aibles.okragent.modules.calendar.infrastructure.config
 
 import org.springframework.context.annotation.Configuration
 

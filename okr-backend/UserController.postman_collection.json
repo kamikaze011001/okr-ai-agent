@@ -1,0 +1,172 @@
+{
+  "info": {
+    "name": "OKR AI Agent - User Module",
+    "description": "Postman collection for testing the User Controller endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "User Initialization",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/users/initialize",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "users",
+            "initialize"
+          ]
+        },
+        "description": "Initialize user profile and notification preferences for a newly authenticated user"
+      },
+      "response": []
+    },
+    {
+      "name": "Get User Profile",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "users",
+            "me"
+          ]
+        },
+        "description": "Retrieve the authenticated user's profile information"
+      },
+      "response": []
+    },
+    {
+      "name": "Update User Profile",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"John Updated\",\n  \"email\": \"john.updated@example.com\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "users",
+            "me"
+          ]
+        },
+        "description": "Update the authenticated user's profile information"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Notification Preferences",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/users/me/notificationpreferences",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "users",
+            "me",
+            "notificationpreferences"
+          ]
+        },
+        "description": "Retrieve the authenticated user's notification preferences"
+      },
+      "response": []
+    },
+    {
+      "name": "Update Notification Preferences",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"deadlineNotifications\": false,\n  \"progressReminders\": true,\n  \"aiRecommendations\": false,\n  \"dailySummary\": true,\n  \"weeklySummary\": false,\n  \"reminderFrequencyHours\": 12\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/users/me/notificationpreferences",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "users",
+            "me",
+            "notificationpreferences"
+          ]
+        },
+        "description": "Update the authenticated user's notification preferences"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string",
+      "description": "JWT token from Keycloak"
+    }
+  ]
+}
