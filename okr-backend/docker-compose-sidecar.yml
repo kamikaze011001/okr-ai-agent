@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # PostgreSQL for OKR database
+  okr-db:
+    image: postgres:15
+    container_name: okr-db
+    environment:
+      POSTGRES_DB: okr_agent
+      POSTGRES_USER: okr_user
+      POSTGRES_PASSWORD: okr_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - okr_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U okr_user -d okr_agent"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL for Keycloak database
+  keycloak-db:
+    image: postgres:15
+    container_name: keycloak-db
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+    volumes:
+      - keycloak_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Keycloak for authentication
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.3.2
+    container_name: okr-keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: password
+      KC_HEALTH_ENABLED: "true"
+    command: start-dev
+    ports:
+      - "8081:8080"
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  okr_db_data:
+  keycloak_db_data:

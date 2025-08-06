@@ -19,7 +19,7 @@ erDiagram
         ENUM status "ACTIVE, COMPLETED, PAUSED"
         DATE start_date "Start Date"
         DATE end_date "End Date"
-        DECIMAL(5,2) completion_percentage "Auto-calculated from Key Results"
+        DECIMAL(5) completion_percentage "Auto-calculated from Key Results"
         TIMESTAMP created_at "Creation Time"
         TIMESTAMP updated_at "Last Update Time"
     }
@@ -30,8 +30,8 @@ erDiagram
         VARCHAR(200) title "Key Result Title"
         TEXT description "Detailed Description"
         ENUM measurement_type "PERCENTAGE, METRIC"
-        DECIMAL(10,2) current_value "Current Progress Value"
-        DECIMAL(10,2) target_value "Target Value"
+        DECIMAL(10) current_value "Current Progress Value"
+        DECIMAL(10) target_value "Target Value"
         VARCHAR(50) unit "Unit of Measurement (for METRIC type)"
         ENUM status "ACTIVE, COMPLETED, PAUSED"
         TIMESTAMP created_at "Creation Time"
@@ -41,8 +41,8 @@ erDiagram
     PROGRESS_HISTORY {
         UUID id PK "Primary Key"
         UUID key_result_id FK "Key Result Reference"
-        DECIMAL(10,2) previous_value "Previous Value"
-        DECIMAL(10,2) new_value "New Value"
+        DECIMAL(10) previous_value "Previous Value"
+        DECIMAL(10) new_value "New Value"
         TEXT notes "Progress Notes"
         TIMESTAMP recorded_at "When Progress Was Recorded"
         VARCHAR(255) updated_by FK "User Who Updated (Keycloak ID)"
@@ -92,7 +92,7 @@ erDiagram
         TEXT content "Message Content"
         TEXT metadata "JSON Metadata"
         INTEGER response_time_ms "AI Response Time in Milliseconds"
-        DECIMAL(3,2) confidence_score "AI Confidence Score (0-1)"
+        DECIMAL(3) confidence_score "AI Confidence Score (0-1)"
         TIMESTAMP created_at "Message Timestamp"
     }
     

@@ -1,4 +1,4 @@
-package com.aibles.okragent.modules.okr
+package com.aibles.okragent.modules.okr.infrastructure.config
 
 import org.springframework.context.annotation.Configuration
 
